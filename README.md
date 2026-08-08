@@ -67,6 +67,7 @@ podman compose down -v
 
 ## Notes
 
+- Image names are fully qualified (`docker.io/...`) so Podman works without configuring unqualified-search registries.
 - Named volumes persist ZooKeeper and Kafka data across restarts.
 - `ZOOKEEPER_SERVERS` must stay semicolon-separated with **no** spaces after `;`.
 - External clients on the host must use the `PLAINTEXT_HOST` ports (`9091`–`9093`), not the internal `9092` listener.
