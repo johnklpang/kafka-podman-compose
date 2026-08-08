@@ -7,7 +7,7 @@ services:
   # ============================================================
 
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:7.5.0
+    image: docker.io/confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper-1
     hostname: zookeeper-1
     restart: unless-stopped
@@ -25,7 +25,7 @@ services:
       - zk1-log:/var/lib/zookeeper/log
 
   zookeeper-2:
-    image: confluentinc/cp-zookeeper:7.5.0
+    image: docker.io/confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper-2
     hostname: zookeeper-2
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
       - zk2-log:/var/lib/zookeeper/log
 
   zookeeper-3:
-    image: confluentinc/cp-zookeeper:7.5.0
+    image: docker.io/confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper-3
     hostname: zookeeper-3
     restart: unless-stopped
@@ -62,7 +62,7 @@ services:
   # ============================================================
 
   kafka-1:
-    image: confluentinc/cp-kafka:7.5.0
+    image: docker.io/confluentinc/cp-kafka:7.5.0
     container_name: kafka-1
     hostname: kafka-1
     restart: unless-stopped
@@ -93,7 +93,7 @@ services:
   # ============================================================
 
   kafka-2:
-    image: confluentinc/cp-kafka:7.5.0
+    image: docker.io/confluentinc/cp-kafka:7.5.0
     container_name: kafka-2
     hostname: kafka-2
     restart: unless-stopped
@@ -124,7 +124,7 @@ services:
   # ============================================================
 
   kafka-3:
-    image: confluentinc/cp-kafka:7.5.0
+    image: docker.io/confluentinc/cp-kafka:7.5.0
     container_name: kafka-3
     hostname: kafka-3
     restart: unless-stopped
@@ -155,7 +155,7 @@ services:
   # ============================================================
 
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: docker.io/provectuslabs/kafka-ui:latest
     container_name: kafka-ui
     hostname: kafka-ui
     restart: unless-stopped
