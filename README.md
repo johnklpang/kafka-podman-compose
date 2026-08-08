@@ -7,15 +7,17 @@
 | Service | Host access | Notes |
 |---------|-------------|--------|
 | ZooKeeper 1–3 | `localhost:2181` (ZK-1 only) | Ensemble quorum on the compose network |
-| Kafka 1 | `localhost:9091` | External `PLAINTEXT_HOST` |
-| Kafka 2 | `localhost:9092` | External `PLAINTEXT_HOST` |
-| Kafka 3 | `localhost:9093` | External `PLAINTEXT_HOST` |
+| Kafka 1 | `localhost:9091` | External `PLAINTEXT_HOST` → container `9091` |
+| Kafka 2 | `localhost:9092` | External `PLAINTEXT_HOST` → container `29092` |
+| Kafka 3 | `localhost:9093` | External `PLAINTEXT_HOST` → container `9093` |
 | Kafka UI | [http://localhost:8083](http://localhost:8083) | Cluster: `ha-cluster` |
 
 Listeners:
 
-- **Inter-broker / in-network:** `kafka-N:29092` (`PLAINTEXT`)
+- **Inter-broker / in-network:** `kafka-N:9092` (`PLAINTEXT`)
 - **From your host:** `localhost:9091,9092,9093` (`PLAINTEXT_HOST`)
+
+Kafka needs a unique container port per listener. Internal traffic keeps the usual `9092`; the host listener uses another port (`9091` / `29092` / `9093`). Broker 2 maps host `9092` → container `29092` so it does not collide with internal `9092`.
 
 Defaults: RF=3, `min.insync.replicas=2`, 24h log retention, sized JVM heaps for a laptop/lab host.
 
@@ -46,7 +48,7 @@ localhost:9091,localhost:9092,localhost:9093
 Create a topic:
 
 ```bash
-podman exec kafka-1 kafka-topics --bootstrap-server kafka-1:29092 \
+podman exec kafka-1 kafka-topics --bootstrap-server kafka-1:9092 \
   --create --topic demo --partitions 3 --replication-factor 3
 ```
 
@@ -73,7 +75,7 @@ podman compose up -d --force-recreate
 
 - Bounded JVM heaps + container `mem_limit` (Confluent defaults are multi‑GB)
 - Healthchecks (`cub zk-ready` / `cub kafka-ready`) and ordered startup
-- Consistent listeners: internal `29092`, host ports `9091–9093` 1:1
+- Conventional internal listener on `9092`; separate host listeners on `9091`/`29092`/`9093`
 - Faster consumer rebalance for labs (`group.initial.rebalance.delay.ms=0`)
 - Shorter retention + smaller log segments for disk churn
 - ZooKeeper autopurge + higher init/sync limits for slower local disks
@@ -94,5 +96,5 @@ podman compose down -v   # also wipe ZK + Kafka data
 
 - Image names are fully qualified (`docker.io/...`) for Podman without short-name registries.
 - `ZOOKEEPER_SERVERS` must stay semicolon-separated with **no** spaces after `;`.
-- Host clients must use `9091–9093`, not the internal `29092` listener.
+- Host clients must use `9091–9093`, not the internal `9092` listener from outside the compose network.
 - Plaintext lab layout only — do not expose on untrusted networks.

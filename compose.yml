@@ -13,7 +13,7 @@ x-zk-healthcheck: &zk-healthcheck
 
 x-kafka-healthcheck: &kafka-healthcheck
   # Probe internal listener only (host advertised listeners break in-container checks)
-  test: ["CMD-SHELL", "cub kafka-ready -b localhost:29092 1 10"]
+  test: ["CMD-SHELL", "cub kafka-ready -b localhost:9092 1 10"]
   interval: 10s
   timeout: 10s
   retries: 12
@@ -129,7 +129,8 @@ services:
 
   # ============================================================
   # KAFKA BROKERS
-  # Internal PLAINTEXT :29092 | Host PLAINTEXT_HOST :9091-9093
+  # Internal PLAINTEXT :9092 | Host PLAINTEXT_HOST on a separate port
+  # (two listeners cannot share one container port)
   # ============================================================
 
   kafka-1:
@@ -141,8 +142,8 @@ services:
     environment:
       <<: *kafka-env
       KAFKA_BROKER_ID: 1
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9091
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:29092,PLAINTEXT_HOST://localhost:9091
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9091
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,PLAINTEXT_HOST://localhost:9091
     volumes:
       - kafka1-data:/var/lib/kafka/data
 
@@ -151,12 +152,13 @@ services:
     container_name: kafka-2
     hostname: kafka-2
     ports:
-      - "9092:9092"
+      # host 9092 -> container host-listener (internal already owns 9092)
+      - "9092:29092"
     environment:
       <<: *kafka-env
       KAFKA_BROKER_ID: 2
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,PLAINTEXT_HOST://localhost:9092
     volumes:
       - kafka2-data:/var/lib/kafka/data
 
@@ -169,8 +171,8 @@ services:
     environment:
       <<: *kafka-env
       KAFKA_BROKER_ID: 3
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:29092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9092,PLAINTEXT_HOST://localhost:9093
     volumes:
       - kafka3-data:/var/lib/kafka/data
 
@@ -197,7 +199,7 @@ services:
     environment:
       DYNAMIC_CONFIG_ENABLED: "false"
       KAFKA_CLUSTERS_0_NAME: ha-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:29092,kafka-2:29092,kafka-3:29092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
       JAVA_OPTS: ${UI_JAVA_OPTS:--Xms128m -Xmx512m}
 
 volumes:
